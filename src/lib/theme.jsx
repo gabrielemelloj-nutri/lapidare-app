@@ -96,6 +96,14 @@ export function ThemeProvider({ children }) {
     // sem afetar legibilidade (cor escura por natureza).
     r.style.setProperty('--ink', primaria);
 
+    // ─── Variantes do --dark usadas dentro da SIDEBAR ───
+    // (hover, borda, divider, texto, etc · todas derivadas da primária)
+    r.style.setProperty('--dark-shade', mistura(primaria, '#000000', 0.15)); // hover/active bg
+    r.style.setProperty('--dark-line',  mistura(primaria, '#000000', 0.25)); // borda do toggle
+    r.style.setProperty('--dark-label', mistura(primaria, '#000000', 0.40)); // group label (sutil)
+    r.style.setProperty('--dark-text',  mistura(primaria, '#ffffff', 0.88)); // texto claro principal
+    r.style.setProperty('--dark-muted', mistura(primaria, '#ffffff', 0.45)); // texto inativo
+
     // Versões "soft" derivadas (background sutil com mesma matiz)
     r.style.setProperty('--gold-soft', mistura(primaria, '#ffffff', 0.82));
     r.style.setProperty('--amber-bg',  mistura(secundaria, '#ffffff', 0.88));

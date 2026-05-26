@@ -32,6 +32,14 @@
   --dark:  #1c1712;   /* sidebar + botões primários */
   --amber: #c4a882;   /* acento dourado */
 
+  /* Variantes do --dark usadas DENTRO da sidebar (hover, bordas, textos).
+     Todas seguem a cor primária quando a nutri customiza. */
+  --dark-shade: #2a231c;  /* hover / active bg */
+  --dark-line:  #3a3028;  /* borda do toggle */
+  --dark-label: #3d3329;  /* label de grupo (sutil) */
+  --dark-text:  #faf8f5;  /* texto claro principal */
+  --dark-muted: #8c7b6b;  /* texto inativo */
+
   --green: #3b6d11;
   --green-soft: #e6f0d4;
   --blue: #185fa5;
