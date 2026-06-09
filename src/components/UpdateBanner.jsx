@@ -2,19 +2,32 @@ import { useEffect, useState } from 'react';
 import { APP_VERSION, REMOTE_VERSION_URL } from '../version.js';
 
 /**
+ * Compara semvers tipo "1.10.0" — retorna >0 se a > b, <0 se a < b, 0 se igual.
+ * Aceita formatos "1.10", "v1.10.0", etc.
+ */
+function compararVersao(a, b) {
+  const parse = v => String(v).replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+  const [a1, a2, a3] = parse(a);
+  const [b1, b2, b3] = parse(b);
+  if (a1 !== b1) return a1 - b1;
+  if (a2 !== b2) return a2 - b2;
+  return (a3 || 0) - (b3 || 0);
+}
+
+/**
  * Banner amarelo no topo da tela que avisa quando há versão nova disponível.
  *
  * Como funciona:
  *  1. Busca version.json do repo oficial (danielasoares-rd/lapidare-app)
  *  2. Compara com APP_VERSION local (do fork da nutri)
- *  3. Se diferente, mostra banner com instruções de Sync Fork
+ *  3. Só mostra se a remota for MAIOR que a local (compararVersao > 0)
  *
- * Roda só 1x ao montar. Cache de 24h em localStorage pra não bater no
- * GitHub a cada navegação. Falha silenciosamente — se a aluna estiver
- * offline ou o GitHub estiver fora, app continua normal.
+ * Cache de 1h em localStorage pra não bater no GitHub a cada navegação.
+ * Cache invalida automaticamente se a APP_VERSION local mudou desde a
+ * última checagem (pra resolver o caso "atualizei e cache ainda tá vencido").
+ * Falha silenciosamente — se offline ou GitHub fora, app continua normal.
  *
- * Renderizado dentro do NutriLayout — só nutri vê (paciente não precisa
- * saber dessas coisas técnicas).
+ * Renderizado dentro do NutriLayout — só nutri vê.
  */
 export default function UpdateBanner() {
   const [remoteVersion, setRemoteVersion] = useState(null);
@@ -29,14 +42,16 @@ export default function UpdateBanner() {
         return;
       }
 
-      // Cache de 24h pra evitar fetch repetido
+      // Cache de 1h — também invalida se APP_VERSION local mudou
+      // (pra resolver o caso "fiz update mas o cache antigo ainda diz que tem update")
       try {
         const cached = localStorage.getItem('lapidare-remote-version');
         if (cached) {
-          const { version, checkedAt } = JSON.parse(cached);
+          const { version, checkedAt, localAtTime } = JSON.parse(cached);
           const idadeHoras = (Date.now() - checkedAt) / (1000 * 60 * 60);
-          if (idadeHoras < 24) {
-            if (version !== APP_VERSION) setRemoteVersion(version);
+          const localMudou = localAtTime !== APP_VERSION;
+          if (idadeHoras < 1 && !localMudou) {
+            if (compararVersao(version, APP_VERSION) > 0) setRemoteVersion(version);
             return;
           }
         }
@@ -50,9 +65,11 @@ export default function UpdateBanner() {
           localStorage.setItem('lapidare-remote-version', JSON.stringify({
             version: data.version,
             checkedAt: Date.now(),
+            localAtTime: APP_VERSION,
           }));
         } catch { /* ignora */ }
-        if (data.version && data.version !== APP_VERSION) {
+        // Só mostra se a remota for ESTRITAMENTE MAIOR que a local
+        if (data.version && compararVersao(data.version, APP_VERSION) > 0) {
           setRemoteVersion(data.version);
         }
       } catch { /* falha silenciosa (offline, github fora, etc) */ }

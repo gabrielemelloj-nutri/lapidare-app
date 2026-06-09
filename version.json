@@ -1,5 +1,5 @@
 {
-  "version": "1.10.0",
+  "version": "1.10.1",
   "released_at": "2026-06-09",
-  "notes": "Nutri pode anexar PDF no Plano, Substituições e Lista de Compras. Paciente baixa direto do app."
+  "notes": "Fix: banner de atualização comparava versões erradas e mostrava versão anterior como 'disponível'"
 }
