@@ -212,7 +212,7 @@ export default function PacientePerfil() {
       }}>
         {[
           { id: 'evolucao',    label: 'Evolução',     icon: 'chart-line' },
-          { id: 'anamnese',    label: 'Anamnese',     icon: 'clipboard-text' },
+          { id: 'anamnese',    label: 'Atendimento',  icon: 'clipboard-text' },
           { id: 'followup',    label: 'Follow-up',    icon: 'notebook' },
           { id: 'plano',          label: 'Plano',          icon: 'salad' },
           { id: 'substituicoes', label: 'Substituições',  icon: 'switch-horizontal' },

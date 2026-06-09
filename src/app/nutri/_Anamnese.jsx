@@ -26,7 +26,7 @@ export default function Anamnese({ pacienteId, nutriId, pacienteNome }) {
   useEffect(() => { carregar(); }, [pacienteId, nutriId]);
 
   async function excluir(a) {
-    if (!window.confirm(`Excluir anamnese "${a.titulo}"?`)) return;
+    if (!window.confirm(`Excluir atendimento "${a.titulo}"?`)) return;
     await supabase.from('anamneses').delete().eq('id', a.id);
     carregar();
   }
@@ -74,7 +74,7 @@ export default function Anamnese({ pacienteId, nutriId, pacienteNome }) {
   function novaEmBranco() {
     setEditar({
       novo: true,
-      titulo: 'Anamnese',
+      titulo: 'Atendimento',
       estrutura: { secoes: [{ id: 's1', titulo: 'Seção 1', perguntas: [] }] },
       respostas: {},
       data: new Date().toISOString().slice(0, 10),
@@ -87,7 +87,7 @@ export default function Anamnese({ pacienteId, nutriId, pacienteNome }) {
       <div className="card">
         <div className="card-header">
           <div>
-            <div className="card-title">Anamnese de {pacienteNome?.split(' ')[0] ?? 'paciente'}</div>
+            <div className="card-title">Atendimento de {pacienteNome?.split(' ')[0] ?? 'paciente'}</div>
             <div className="card-sub">Registro clínico — só você vê (paciente não acessa). Baixe em PDF quando quiser.</div>
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function Anamnese({ pacienteId, nutriId, pacienteNome }) {
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               <button className="btn" onClick={novaDoLapidare}>
-                <i className="ti ti-clipboard-text" aria-hidden="true"></i> Anamnese Lapidare
+                <i className="ti ti-clipboard-text" aria-hidden="true"></i> Atendimento Lapidare
               </button>
               <button className="btn" onClick={novaDoQFA}>
                 <i className="ti ti-list-check" aria-hidden="true"></i> QFA — Freq. Alimentar
@@ -158,9 +158,9 @@ export default function Anamnese({ pacienteId, nutriId, pacienteNome }) {
           ) : anamneses.length === 0 ? (
             <div className="empty-card" style={{ padding: 24 }}>
               <i className="ti ti-clipboard-text empty-icon" aria-hidden="true"></i>
-              <div className="empty-title">Nenhuma anamnese ainda</div>
+              <div className="empty-title">Nenhum atendimento ainda</div>
               <div className="empty-sub">
-                Escolha um modelo pronto acima (Anamnese Lapidare ou QFA) ou comece do zero.
+                Escolha um modelo pronto acima (Atendimento Lapidare ou QFA) ou comece do zero.
               </div>
             </div>
           ) : (
@@ -281,11 +281,11 @@ function ModalEditar({ a, pacienteId, nutriId, pacienteNome, onClose, onSaved })
       estrutura: a.estrutura,
     });
     if (error) alert('Erro: ' + error.message);
-    else alert('Modelo salvo! Aparece na lista quando criar uma nova anamnese.');
+    else alert('Modelo salvo! Aparece na lista quando criar um novo atendimento.');
   }
 
   return (
-    <ModalShell large title={a.novo ? 'Nova anamnese' : `Editar: ${a.titulo}`}
+    <ModalShell large title={a.novo ? 'Novo atendimento' : `Editar: ${a.titulo}`}
       subtitle={`Paciente: ${pacienteNome}`}
       onClose={onClose}>
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 10, marginBottom: 14 }}>
@@ -397,7 +397,7 @@ function ModalEditar({ a, pacienteId, nutriId, pacienteNome, onClose, onSaved })
         <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
           <button className="btn-outline" onClick={onClose}>Cancelar</button>
           <button className="btn" onClick={salvar} disabled={busy}>
-            <i className="ti ti-check" aria-hidden="true"></i> {busy ? 'Salvando…' : 'Salvar anamnese'}
+            <i className="ti ti-check" aria-hidden="true"></i> {busy ? 'Salvando…' : 'Salvar atendimento'}
           </button>
         </div>
       </div>
@@ -436,7 +436,7 @@ function ModalVer({ a, pacienteNome, onClose }) {
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Anamnese · ${escapeHtml(pacienteNome ?? '—')}</title>
+  <title>Atendimento · ${escapeHtml(pacienteNome ?? '—')}</title>
   <style>
     @page { size: A4; margin: 18mm; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -663,7 +663,7 @@ function ModalCriarModelo({ contexto, templates, nutriId, onClose, onSaved }) {
   // ─── Gerenciar lista ───
   if (tab === 'lista') {
     return (
-      <ModalShell large title="Seus modelos de anamnese" onClose={onClose}>
+      <ModalShell large title="Seus modelos de atendimento" onClose={onClose}>
         {templates.length === 0 ? (
           <div style={{ padding: 20, color: 'var(--text3)', fontSize: 13, textAlign: 'center' }}>
             Nenhum modelo próprio ainda.
@@ -762,7 +762,7 @@ function ModalCriarModelo({ contexto, templates, nutriId, onClose, onSaved }) {
         <>
           <label className="form-lbl">Nome do modelo</label>
           <input value={nome} onChange={e => setNome(e.target.value)}
-            placeholder="Ex: Anamnese pediátrica, Anamnese esportiva, etc." />
+            placeholder="Ex: Atendimento pediátrico, Atendimento esportivo, etc." />
 
           <label className="form-lbl" style={{ marginTop: 10 }}>Descrição (opcional)</label>
           <input value={descricao} onChange={e => setDesc(e.target.value)}
