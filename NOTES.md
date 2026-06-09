@@ -342,6 +342,145 @@ lapidare-app/
 - **v1.0** — Lançamento inicial open source
 - **v1.1** — Fix pg_cron opcional + ordem servicos/vendas no setup
 - **v1.2** — PWA completo (manifest + ícones) + editar/excluir venda no Financeiro
+- **v1.3** — Personalização total (Login com marca, cores no Login, mensagens de erro úteis)
+- **v1.4** — Sidebar inteira muda com cor primária + contraste adaptativo
+- **v1.5** — Fix logo upload (RLS) + cor texto sidebar customizável + labels claros
+- **v1.6** — Nome/foto da nutri customizável (substitui "Dra. Daniela" hardcoded) + banner F5 grande
+
+---
+
+## 🆕 Sessão maio/2026 — atualizações pós-criação deste doc
+
+Atualizações implementadas DEPOIS da v1.2 documentada acima. Todas no GitHub
+em commits: `f096f9d`, `349701c`, `8cfeb6c`, `d048612`, `2d3e899`, `ae83f8a`, `731b076`.
+
+### 1. Login customizado com marca da nutri
+- `Login.jsx` antes: hardcoded "LAPIDARE"
+- `Login.jsx` agora: usa `useTheme()` pra mostrar `marca_nome` da nutri (ou logo)
+- Nova função SQL `buscar_marca_principal()` — busca marca da nutri "dona" do deploy
+  pra exibir mesmo SEM usuário logado (a tela de Login é pública)
+- `theme.jsx`: quando role é null/anônimo, agora chama essa RPC
+
+### 2. Personalização agora muda TUDO de verdade (não só acentos)
+**Problema raiz:** `nutri.css` redeclarava `--dark`, `--amber` dentro de `.nutri-panel` →
+isso tem precedência sobre `:root` onde o JS aplica → personalização não pegava.
+Mesmo com `.paciente-app` no paciente.
+
+**Fix:** removeu redeclarações locais, declarou `--dark` e `--amber` no `:root` em
+`tokens.css`. JS agora controla via `r.style.setProperty('--dark', primaria)`.
+
+Também adicionou variantes derivadas no `theme.jsx`:
+- `--dark-shade` (hover/active bg)
+- `--dark-line` (borda do toggle)
+- `--dark-label` (labels de grupo na sidebar)
+- `--dark-text` (texto claro principal)
+- `--dark-muted` (texto inativo)
+- `--bg`, `--bg-soft`, `--bg-deep` (background derivado da primária)
+- `--ink` (texto escuro derivado da primária)
+
+Login + SignupPaciente: removidos gradientes hardcoded (`#ece6dc 0%, #e3dcce 100%`),
+agora usam `var(--bg-soft) 0%, var(--bg-deep) 100%`.
+
+### 3. Contraste adaptativo do texto da sidebar
+Quando primária é CLARA (luminância > 0.45 — ex: tan, rose gold), texto vira preto.
+Quando ESCURA, texto vira branco. Garante contraste em qualquer paleta.
+
+Fórmula do muted derivada do TEXTO (não da primária) → contraste forte:
+- Primária clara: muted = preto + 35% primária
+- Primária escura: muted = branco + 40% primária
+
+Função `luminancia(hex)` adicionada no `theme.jsx`.
+
+### 4. Mensagens de erro amigáveis no cadastro
+`Login.jsx` agora tem função `mensagemAmigavel(error)` que traduz:
+- `Failed to fetch` / `Falha ao buscar` → instrução completa de Trigger Deploy
+  + checar URL/key no Netlify (era o problema das nutris novas)
+- `Invalid login credentials` → "Email ou senha incorretos"
+- `email rate limit` → como desligar Confirm email
+- `user already registered` → sugere fazer login
+
+Div do erro recebe `whiteSpace: 'pre-line'` pra quebras de linha.
+
+### 5. Fix do upload de logo (RLS bug)
+Erro: "new row violates row-level security policy".
+- Adicionada policy `logos_storage_select` (faltava)
+- INSERT/UPDATE/DELETE simplificadas: `auth.uid() is not null` em vez de checar
+  path com UUID (cada nutri tem Supabase isolado, então pode ser permissivo)
+- Bucket `logos` confirmado público
+
+### 6. Cor do texto da sidebar customizável (override manual)
+- Nova coluna `nutris.cor_texto_sidebar` (text, nullable)
+- Quando preenchida, sobrescreve o auto-calculado
+- UI no Personalização: input color + reset "Voltar pro automático"
+- `theme.jsx`: aplica override no `--dark-text` se existir
+
+### 7. Banner F5 grande (impossível ignorar)
+Substituiu mensagem verde miúda "Personalização salva! Recarregue a página" por
+banner amarelo grande com ícone refresh + botão "Recarregar agora" que faz
+`window.location.reload()`. Fica sticky até user recarregar.
+
+### 8. Preview do Personalização não some mais (profile-aware)
+**Problema:** ao abrir Personalização, useEffect do preview aplicava cores do
+`form` (que começa com defaults) antes do `profile` carregar — sidebar piscava
+defaults brevemente.
+
+**Fix:** guard `if (!profile) return;` no useEffect — só aplica preview quando
+profile já chegou.
+
+### 9. Nome/foto da nutri customizável (substituiu "Dra. Daniela" hardcoded)
+**Problema crítico:** 5 lugares no painel da paciente tinham "Dra. Daniela"
+hardcoded — paciente da Kelly via "Dra. Daniela" em vez de "Dra. Kelly".
+
+Lugares corrigidos:
+- `src/app/paciente/Chat.jsx` (banner + empty state)
+- `src/app/paciente/Feed.jsx` (comentário da nutri)
+- `src/app/paciente/Inicio.jsx` (consulta no Google Calendar)
+- `src/components/PacienteLayout.jsx` (header do chat)
+
+**Solução:**
+- Nova coluna `nutris.foto_url`
+- `buscar_personalizacao_nutri()` agora retorna `nutri_nome` (= `nome`) e
+  `nutri_foto_url` (= `foto_url`)
+- `theme.jsx` propaga via `tema.nutri_nome` e `tema.nutri_foto_url`
+- Os 5 lugares hardcoded agora usam `useTheme()` + variável dinâmica
+- Novo card "Meu perfil" no Personalizacao (separado da Marca) — nome de
+  exibição + upload de foto
+
+### 10. Fix erro 42P13 (mudança de return type)
+Postgres bloqueia `create or replace function` quando o return type muda
+(ex: adicionar coluna nova no return table). Solução: `DROP FUNCTION IF EXISTS`
+antes do `CREATE OR REPLACE`. Aplicado em `buscar_personalizacao_nutri()` e
+`buscar_marca_principal()` no setup.sql.
+
+### 11. Documentação aprimorada
+- `SETUP.md`: nova seção "Falha ao buscar" como PRIMEIRO problema da lista,
+  com checklist de 4 passos (variáveis Netlify, redeploy, Supabase pausado, F12)
+- `CLAUDE.md`: criado pra dar contexto automático ao agente quando abrir Claude
+  Code nessa pasta
+
+---
+
+## 🛠️ Workflow de atualização pras nutris EXISTENTES
+
+Quando alguma atualização nossa precisa de mudança no banco, a nutri faz:
+1. **GitHub:** Sync fork → Update branch
+2. **Supabase:** copia bloco SQL específico, cola em SQL Editor, Run
+3. **Netlify:** redeploy automático em 2-3 min
+4. **Browser:** hard refresh (Cmd+Shift+R)
+
+Pra próximas atualizações **só de frontend**, basta o passo 1 + 4 (skip SQL).
+
+Setup.sql é **sempre idempotente** — pode rodar completo de novo sem perder dados.
+
+---
+
+## 📋 Próximas decisões em aberto
+
+- **Banner "Atualização de banco pendente"** no app (auto-detect via tentar
+  query e fallback se faltar coluna) — pra alertar nutri quando precisa rodar SQL
+- **Manter "Meus serviços" ou unificar com "Esteira"?** (decisão pendente — discutida no DS Company)
+- **Edge Function pra auto-migração?** (Caminho 3 da conversa anterior — mais complexo)
+- **Importação XLSX direto** (atualmente só CSV) na importação de pacientes
 
 ---
 

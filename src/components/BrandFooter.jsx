@@ -1,8 +1,14 @@
+import { APP_VERSION } from '../version.js';
+
 /**
  * Rodapé de assinatura fixo — não pode ser editado pela personalização.
  * Aparece em todas as telas (nutri, paciente, login).
  *
  * Variante `compact` é pra ficar logo acima da tab bar do app da paciente.
+ *
+ * A versão do app aparece pequena ao lado da assinatura — isso facilita o
+ * suporte: a Daniela bate o olho no screenshot de qualquer aluna e sabe
+ * imediatamente qual versão do Lapidare o fork dela está rodando.
  */
 export default function BrandFooter({ compact = false }) {
   return (
@@ -17,6 +23,7 @@ export default function BrandFooter({ compact = false }) {
       userSelect: 'none',
     }}>
       Desenvolvido por <strong style={{ fontWeight: 600 }}>DS EMPREENDEDORISMO DIGITAL</strong>
+      <span style={{ marginLeft: 8, opacity: 0.7 }}>· v{APP_VERSION}</span>
     </div>
   );
 }

@@ -167,6 +167,36 @@ Pronto. Agora você tem o seu próprio repositório com o código do app.
 
 ## 🆘 Problemas comuns
 
+### ⚠️ "Sumiu o grupo Gestão do Consultório (ou outra parte) da sidebar"
+
+Sintoma: parte do menu lateral desaparece. Mesmo após **Sync Fork** no GitHub, não volta.
+
+Causa quase sempre: **o Netlify não redeployou** após o Sync Fork. O código no GitHub está certo, mas o site continua servindo o build antigo.
+
+**Faz na ordem:**
+
+**1. Forçar redeploy no Netlify**
+- Vai em [app.netlify.com](https://app.netlify.com) → seu site → aba **Deploys**
+- Clica em **Trigger deploy** → **Deploy site**
+- Aguarda ~2-3 min até ficar verde **"Published"**
+
+**2. Limpar cache do navegador**
+- No site, aperta **Ctrl+Shift+R** (Windows) ou **Cmd+Shift+R** (Mac)
+- Isso força o navegador a baixar tudo de novo
+
+**3. Confirmar que o fork está atualizado mesmo**
+- Abre `https://github.com/<seu-usuario>/lapidare-app/blob/main/src/components/NutriLayout.jsx`
+- Aperta **Ctrl+F** e procura `Gestão do consultório`
+- Se aparecer → fork OK, problema é Netlify (volta pro passo 1)
+- Se NÃO aparecer → Sync Fork falhou. Vai em github.com/seu-usuario/lapidare-app → botão **Sync fork** → **Update branch**
+
+**4. Se persistir, reconectar o auto-deploy do GitHub**
+- Netlify → seu site → **Site configuration** → **Build & deploy** → **Continuous deployment**
+- Em **Build settings**, confere que está **Repository: github.com/seu-usuario/lapidare-app** e **Branch: main**
+- Se não estiver, clica em **Link site to Git** e reconfigura
+
+---
+
 ### ⚠️ "Falha ao buscar" / "Failed to fetch" ao criar conta
 
 Esse é o erro **mais comum** quando a nutri está montando o app pela primeira vez. Significa que o app **não conseguiu falar com o Supabase**. Resolve seguindo essa ordem:

@@ -4,6 +4,7 @@ import { useSession, signOut } from '../lib/session.jsx';
 import { useTheme } from '../lib/theme.jsx';
 import { supabase } from '../lib/supabase.js';
 import BrandFooter from './BrandFooter.jsx';
+import UpdateBanner from './UpdateBanner.jsx';
 import { iniciais, mesAno } from '../lib/utils.js';
 import '../styles/nutri.css';
 
@@ -140,6 +141,7 @@ export default function NutriLayout() {
       </aside>
 
       <main className="main">
+        <UpdateBanner />
         <header className="topbar">
           <button
             className="mobile-toggle"
