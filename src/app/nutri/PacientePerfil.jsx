@@ -24,6 +24,7 @@ export default function PacientePerfil() {
   const [editandoNasc, setEditandoNasc] = useState(false);
   const [novoNasc, setNovoNasc] = useState('');
   const [salvandoNasc, setSalvandoNasc] = useState(false);
+  const [salvandoSexo, setSalvandoSexo] = useState(false);
 
   async function carregar() {
     const { data } = await supabase
@@ -79,6 +80,16 @@ export default function PacientePerfil() {
     carregar();
   }
 
+  async function salvarSexo(novoSexo) {
+    if (!['feminino', 'masculino'].includes(novoSexo)) return;
+    setSalvandoSexo(true);
+    const { error } = await supabase.from('pacientes')
+      .update({ sexo: novoSexo }).eq('id', id);
+    setSalvandoSexo(false);
+    if (error) { alert('Erro ao atualizar sexo: ' + error.message); return; }
+    carregar();
+  }
+
   function calcularIdade(iso) {
     if (!iso) return null;
     const n = new Date(iso + 'T12:00:00');
@@ -128,7 +139,7 @@ export default function PacientePerfil() {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="page-title" style={{ marginBottom: 2 }}>{paciente.nome}</div>
           <div className="page-sub" style={{ marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span>{paciente.email} · cadastrada em {dataBR(paciente.created_at)}</span>
+            <span>{paciente.email} · {paciente.sexo === 'masculino' ? 'cadastrado' : 'cadastrada'} em {dataBR(paciente.created_at)}</span>
             <button onClick={enviarRedefinicaoSenha}
               title="Envia um email pra paciente com link de redefinição de senha"
               style={{
@@ -186,6 +197,26 @@ export default function PacientePerfil() {
               + Adicionar data de nascimento
             </button>
           )}
+
+          {/* Sexo — select inline, salva ao mudar */}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginLeft: 10, fontSize: 12, color: 'var(--text3)' }}>
+            <span style={{ opacity: 0.6 }}>·</span>
+            <span>{paciente.sexo === 'masculino' ? '♂' : '♀'}</span>
+            <select
+              value={paciente.sexo ?? 'feminino'}
+              onChange={e => salvarSexo(e.target.value)}
+              disabled={salvandoSexo}
+              title="Sexo da paciente — controla concordância de gênero no app"
+              style={{
+                padding: '2px 6px', fontSize: 12, margin: 0,
+                border: '0.5px solid var(--border)', borderRadius: 6,
+                background: 'transparent', cursor: 'pointer',
+                fontFamily: 'var(--font-sans)', color: 'var(--text3)',
+              }}>
+              <option value="feminino">Feminino</option>
+              <option value="masculino">Masculino</option>
+            </select>
+          </span>
         </div>
       </div>
 

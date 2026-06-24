@@ -1,5 +1,5 @@
 {
-  "version": "1.11.0",
+  "version": "1.11.1",
   "released_at": "2026-06-09",
-  "notes": "Campo Sexo no cadastro da paciente — app agora usa concordância correta (Bem-vinda/Bem-vindo). Útil pra nutris que atendem pacientes homens também."
+  "notes": "Nutri agora pode editar o sexo de pacientes já cadastradas direto no perfil"
 }
