@@ -72,13 +72,45 @@ export default function Cadastrar() {
       status: 'pendente',
     };
     // upsert (caso já exista pendente com mesmo email, atualiza dados)
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('pacientes_pendentes')
       .upsert(payload, { onConflict: 'nutri_id,email' })
       .select('*')
       .single();
+
+    // Fallback: se o Supabase da nutri ainda não foi atualizado pra v1.11.0,
+    // a coluna "sexo" não existe ainda. Tenta de novo sem o campo + avisa
+    // ela pra rodar o SQL atualizado pra ter a feature completa.
+    if (error && /sexo/i.test(error.message) && /schema cache|column/i.test(error.message)) {
+      const { sexo: _omitido, ...payloadSemSexo } = payload;
+      const retry = await supabase
+        .from('pacientes_pendentes')
+        .upsert(payloadSemSexo, { onConflict: 'nutri_id,email' })
+        .select('*')
+        .single();
+      data = retry.data;
+      error = retry.error;
+      if (!error) {
+        // Cadastro funcionou, mas avisa que falta atualizar o banco
+        setErro(
+          'Atenção: cadastro feito, mas o campo "Sexo" não foi salvo porque seu Supabase ' +
+          'ainda não foi atualizado pra v1.11.0. Rode o SQL atualizado: ' +
+          'github.com/danielasoares-rd/lapidare-app/blob/main/supabase/delta-v1.11.0.sql'
+        );
+      }
+    }
+
     setBusy(false);
-    if (error) return setErro('Erro ao cadastrar: ' + error.message);
+    if (error) {
+      // Erro de schema (ex: outras colunas faltando) — mensagem mais didática
+      if (/schema cache|column.*does not exist/i.test(error.message)) {
+        return setErro(
+          'Seu Supabase está desatualizado. Rode o SQL mais recente pra resolver: ' +
+          'github.com/danielasoares-rd/lapidare-app/tree/main/supabase'
+        );
+      }
+      return setErro('Erro ao cadastrar: ' + error.message);
+    }
 
     setSucesso(data);
     resetForm();

@@ -1,5 +1,5 @@
 {
-  "version": "1.12.0",
+  "version": "1.11.3",
   "released_at": "2026-06-09",
-  "notes": "Nutri pode anexar PDF na avaliação antropométrica (avaliação física presencial ou exportada do Shaped). Paciente baixa direto da tela de Progresso."
+  "notes": "Fix: cadastro de paciente não trava mais quando o Supabase não foi atualizado pra v1.11. Faz fallback automático sem o campo sexo + mostra mensagem clara pra rodar o SQL."
 }
